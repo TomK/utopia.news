@@ -7,6 +7,7 @@ class tabledef_NewsTable extends flexDb_TableDefinition {
 		$this->AddField('time',ftDATE);
 		$this->AddField('heading',ftVARCHAR,50);
 		$this->AddField('description',ftVARCHAR,150);
+		$this->AddField('tags',ftTEXT);
 		$this->AddField('text',ftTEXT);
 		$this->AddField('image',ftIMAGE);
 		$this->AddField('archive',ftBOOL);
@@ -28,6 +29,9 @@ class module_NewsAdmin extends flexDb_ListDataModule {
 		$this->AddField('heading','heading','news','heading');
 		//$this->AddField('text','text','news','text');
 		//$this->AddField('image','image','news','image');
+		
+		$this->AddFilter('time',ctGTEQ,itDATE);
+		$this->AddFilter('time',ctLTEQ,itDATE);
 	}
 	public function ParentLoad($parent) {}
 	public function RunModule() {
@@ -35,9 +39,70 @@ class module_NewsAdmin extends flexDb_ListDataModule {
 	}
 }
 
+class module_NewsRSS extends flexDb_DataModule {
+  public function SetupParents() { 
+    $this->SetRewrite(true);
+  }
+  public function GetUUID() { return 'news-rss'; }
+  public function GetTitle() { return 'News RSS'; }
+  public function GetOptions() { return ALLOW_FILTER; }
+  public function GetTabledef() { return 'tabledef_NewsTable'; }
+  public function SetupFields() {
+    $this->CreateTable('news');
+    $this->AddField('time','time','news','Date',itDATE);
+    $this->AddField('heading','heading','news','Heading',itTEXT);
+    $this->AddField('description','description','news','Description',itTEXT);
+    $this->AddField('tags','tags','news','Tags',itTEXT);
+    $this->AddField('text','text','news','Content',itHTML);
+    $this->AddField('image','image','news','Image',itFILE);
+    $this->AddField('archive','archive','news','Archive',itCHECKBOX);
+  }
+  public function ParentLoad($parent) {}
+  public function RunModule() {
+    FlexDB::CancelTemplate();
+    $dom = FlexDB::GetDomainName();
+    $date = date('r');
+
+    $rows = $this->GetRows();
+    $items = '';
+    foreach ($rows as $row) {
+      $crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
+      $link = htmlentities('http://'.$dom.CallModuleFunc('module_NewsDisplay','GetURL',array('news_id'=>$row['news_id'])));
+      $img = '';
+      if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
+      $pubDate = date('r',strtotime($row['time']));
+      $items .= <<<FIN
+ <item>
+  <title>{$row['heading']}</title>
+  <description>{$row['description']}</description>
+  <link>{$link}</link>
+  <guid isPermaLink="false">{$link}</guid>
+  <pubDate>{$pubDate}</pubDate>{$img}
+ </item>
+FIN;
+    }
+
+    header('Content-Type: application/rss+xml',true);
+    $self = htmlentities('http://'.$dom.$_SERVER['REQUEST_URI']);
+    echo <<<FIN
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel>
+ <atom:link href="{$self}" rel="self" type="application/rss+xml" />
+ <title>{$dom} News Feed</title>
+ <description>Latest news from {$dom}</description>
+ <link>http://{$dom}</link>
+ <lastBuildDate>{$date}</lastBuildDate>
+ <language>en-gb</language>
+ <ttl>15</ttl>
+{$items}
+</channel></rss>
+FIN;
+  }
+}
+
 class module_NewsAdminDetail extends flexDb_SingleDataModule {
 	public function SetupParents() {
-		$this->AddParent('module_NewsAdmin','news_id','*');
+    $this->AddParent('module_NewsAdmin','news_id','*');
+		$this->AddParent('module_NewsAdmin');
 		//breadcrumb::AddModule('module_NewsAdmin');
 	}
 	public function GetTitle() { return 'Edit News Item'; }
@@ -47,9 +112,11 @@ class module_NewsAdminDetail extends flexDb_SingleDataModule {
 		$this->CreateTable('news');
 		$this->AddField('time','time','news','Date',itDATE);
 		$this->AddField('heading','heading','news','Heading',itTEXT);
-		$this->AddField('description','description','news','Tag Line',itTEXT);
+		$this->AddField('description','description','news','Description',itTEXT);
 		$this->FieldStyles_Set('description',array('width'=>'60%'));
-		$this->AddField('text','text','news','Content',itTEXTAREA);
+		$this->AddField('tags','tags','news','Tags',itTEXT);
+    $this->FieldStyles_Set('tags',array('width'=>'60%'));
+    $this->AddField('text','text','news','Content',itHTML);
 		$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
 		$this->AddField('image','image','news','Image',itFILE);
 		$this->SetFieldProperty('image','length',150);
