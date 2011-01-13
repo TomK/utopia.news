@@ -1,6 +1,6 @@
 <?php
 
-class tabledef_NewsTable extends flexDb_TableDefinition {
+class tabledef_NewsTable extends uTableDef {
 	public $tablename = 'news';
 	public function SetupFields() {
 		$this->AddField('news_id',ftNUMBER);
@@ -16,7 +16,7 @@ class tabledef_NewsTable extends flexDb_TableDefinition {
 	}
 }
 
-class module_NewsAdmin extends flexDb_ListDataModule {
+class module_NewsAdmin extends uListDataModule {
 	public function SetupParents() {
 		$this->AddParent('internalmodule_Admin');
 	}
@@ -39,7 +39,7 @@ class module_NewsAdmin extends flexDb_ListDataModule {
 	}
 }
 
-class module_NewsRSS extends flexDb_DataModule {
+class module_NewsRSS extends uDataModule {
   public function SetupParents() { 
     $this->SetRewrite(true);
   }
@@ -59,8 +59,8 @@ class module_NewsRSS extends flexDb_DataModule {
   }
   public function ParentLoad($parent) {}
   public function RunModule() {
-    FlexDB::CancelTemplate();
-    $dom = FlexDB::GetDomainName();
+    utopia::CancelTemplate();
+    $dom = utopia::GetDomainName();
     $date = date('r');
 
     $rows = $this->GetRows();
@@ -99,7 +99,7 @@ FIN;
   }
 }
 
-class module_NewsAdminDetail extends flexDb_SingleDataModule {
+class module_NewsAdminDetail extends uSingleDataModule {
 	public function SetupParents() {
     $this->AddParent('module_NewsAdmin','news_id','*');
 		$this->AddParent('module_NewsAdmin');
@@ -128,8 +128,8 @@ class module_NewsAdminDetail extends flexDb_SingleDataModule {
 	}
 }
 
-FlexDB::AddTemplateParser('newsticker','module_NewsTicker::GetOutput','');
-class module_NewsTicker extends flexDb_DataModule {
+utopia::AddTemplateParser('newsticker','module_NewsTicker::GetOutput','');
+class module_NewsTicker extends uDataModule {
 	public function SetupParents() { }
 	public function GetTitle() { return ''; }
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
@@ -167,8 +167,8 @@ class module_NewsTicker extends flexDb_DataModule {
 		echo '<tr><td colspan="2"><a href="'.CallModuleFunc('module_NewsArchive','GetURL').'">News Archive</a></td></tr>';
 		echo '</table>';
 
-		//FlexDB::AppendVar('head','<link rel="alternate" type="application/rss+xml" title="'.FlexDB::GetDomainName().' News Feed" href="'.$this->GetURL(array('__ajax'=>'getNewsRSS')).'" />');
-//		FlexDB::AppendVar('head','<link rel="alternate" type="application/atom+xml" title="'.FlexDB::GetDomainName().' News Feed" href="'.$this->GetURL(array('__ajax'=>'getNewsRSS')).'" />');
+		//utopia::AppendVar('head','<link rel="alternate" type="application/rss+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$this->GetURL(array('__ajax'=>'getNewsRSS')).'" />');
+//		utopia::AppendVar('head','<link rel="alternate" type="application/atom+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$this->GetURL(array('__ajax'=>'getNewsRSS')).'" />');
 	}
 
 //	public function GetRows() {
@@ -178,7 +178,7 @@ class module_NewsTicker extends flexDb_DataModule {
 }
 
 
-class module_NewsArchive extends flexDb_DataModule {
+class module_NewsArchive extends uDataModule {
 	public function SetupParents() {
 		$this->RegisterAjax('getNewsRSS',array($this,'getRSS'));
 		$this->SetRewrite(true);
@@ -204,7 +204,7 @@ class module_NewsArchive extends flexDb_DataModule {
 	static $rssShown = false;
 	public static function ShowRSSLink() {
 		if (self::$rssShown) return;
-		FlexDB::AppendVar('</head>','<link rel="alternate" type="application/atom+xml" title="'.FlexDB::GetDomainName().' News Feed" href="'.CallModuleFunc(__CLASS__,'GetURL',array('__ajax'=>'getNewsRSS')).'" />'."\n");
+		utopia::AppendVar('</head>','<link rel="alternate" type="application/atom+xml" title="'.utopia::GetDomainName().' News Feed" href="'.CallModuleFunc(__CLASS__,'GetURL',array('__ajax'=>'getNewsRSS')).'" />'."\n");
 		self::$rssShown = true;
 	}
 	public function ParentLoad($parent) {}
@@ -231,7 +231,7 @@ class module_NewsArchive extends flexDb_DataModule {
 	}
 
 	public function getRSS() {
-		$dom = FlexDB::GetDomainName();
+		$dom = utopia::GetDomainName();
 		$date = date('r');
 
 		$rows = $this->GetRows();
@@ -283,7 +283,7 @@ FIN;
 //	}
 }
 
-class module_NewsDisplay extends flexDb_DataModule {
+class module_NewsDisplay extends uDataModule {
 	public function SetupParents() {
 		$this->AddParent('module_NewsTicker','news_id','*');
 		$this->SetRewrite(array('{heading}','{news_id}'),true);
@@ -306,7 +306,7 @@ class module_NewsDisplay extends flexDb_DataModule {
 		uBreadcrumb::AddCrumb('News &amp; Articles',CallModuleFunc('module_NewsArchive', 'GetURL'));
 		$ds = $this->GetDataset();
 		$rec = $this->GetRecord($ds,0);
-		FlexDB::SetTitle($rec['heading']);
+		utopia::SetTitle($rec['heading']);
 		$img = '';
 		if ($rec['image']) {
 			$imgLink = $this->GetImageLinkFromTable('image','news','news_id',$rec['news_id'],300);
