@@ -56,6 +56,7 @@ class module_NewsRSS extends uDataModule {
     $this->AddField('text','text','news','Content',itHTML);
     $this->AddField('image','image','news','Image',itFILE);
     $this->AddField('archive','archive','news','Archive',itCHECKBOX);
+    $this->AddOrderBy('time','desc');
   }
   public function ParentLoad($parent) {}
   public function RunModule() {
