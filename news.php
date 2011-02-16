@@ -56,6 +56,7 @@ class module_NewsRSS extends uDataModule {
     $this->AddField('text','text','news','Content',itHTML);
 //    $this->AddField('image','image','news','Image',itFILE);
     $this->AddField('archive','archive','news','Archive',itCHECKBOX);
+    $this->AddOrderBy('time','desc');
   }
   public function ParentLoad($parent) {}
   public function RunModule() {
@@ -308,10 +309,10 @@ class module_NewsDisplay extends uDataModule {
 		$rec = $this->GetRecord($ds,0);
 		utopia::SetTitle($rec['heading']);
 		$img = '';
-//		if ($rec['image']) {
-//			$imgLink = $this->GetImageLinkFromTable('image','news','news_id',$rec['news_id'],300);
-//			$img = '<img src="'.$imgLink.'" style="float:right;margin-right:30px;margin-top:30px">';
-//		}
+/*		if ($rec['image']) {
+			$imgLink = $this->GetImageLinkFromTable('image','news','news_id',$rec['news_id'],300);
+			$img = '<img src="'.$imgLink.'" style="float:right;margin-right:30px;margin-top:30px">';
+		}*/
 		$text = nl2br($rec['text']);
 		echo <<<FIN
 $img
