@@ -9,7 +9,7 @@ class tabledef_NewsTable extends uTableDef {
 		$this->AddField('description',ftVARCHAR,150);
 		$this->AddField('tags',ftTEXT);
 		$this->AddField('text',ftTEXT);
-		$this->AddField('image',ftIMAGE);
+//		$this->AddField('image',ftIMAGE);
 		$this->AddField('archive',ftBOOL);
 
 		$this->SetPrimaryKey('news_id');
@@ -119,8 +119,8 @@ class module_NewsAdminDetail extends uSingleDataModule {
     $this->FieldStyles_Set('tags',array('width'=>'60%'));
     $this->AddField('text','text','news','Content',itHTML);
 		$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
-//		$this->AddField('image','image','news','Image',itFILE);
-//		$this->SetFieldProperty('image','length',150);
+		//$this->AddField('image','image','news','Image',itFILE);
+		//$this->SetFieldProperty('image','length',150);
 		$this->AddField('archive','archive','news','Archive',itCHECKBOX);
 	}
 	public function ParentLoad($parent) {}
@@ -142,7 +142,7 @@ class module_NewsTicker extends uDataModule {
 		$this->AddField('text','text','news','text');
 		$this->AddField('description','description','news','text');
 		//$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
-//		$this->AddField('image','image','news','image');
+		//$this->AddField('image','image','news','image');
 		$this->AddOrderBy('`news`.`time`','DESC');
 		$this->AddField('archive','archive','news');
 		//$this->AddFilter('archive',ctEQ,itNONE,0);
@@ -195,7 +195,7 @@ class module_NewsArchive extends uDataModule {
 		$this->AddField('text','text','news','text');
 		$this->AddField('description','description','news','text');
 		//$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
-//		$this->AddField('image','image','news','image');
+		//$this->AddField('image','image','news','image');
 		$this->AddOrderBy('`news`.`time`','DESC');
 		$this->AddField('archive','archive','news');
 		//$this->AddFilter('archive',ctEQ,itNONE,0);
@@ -241,7 +241,7 @@ class module_NewsArchive extends uDataModule {
 			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
 			$link = htmlentities('http://'.$dom.CallModuleFunc('module_NewsDisplay','GetURL',array('news_id'=>$row['news_id'])));
 			$img = '';
-//			if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
+			//if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
 			$pubDate = date('r',strtotime($row['time']));
 			$items .= <<<FIN
  <item>
@@ -299,7 +299,7 @@ class module_NewsDisplay extends uDataModule {
 		$this->AddField('heading','heading','news','heading');
 		$this->AddField('text','text','news','text');
 		$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
-//		$this->AddField('image','image','news','image');
+		//$this->AddField('image','image','news','image');
 	}
 	public function GetUUID() { return 'news'; }
 	public function ParentLoad($parent) {}
