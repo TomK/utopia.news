@@ -287,7 +287,7 @@ FIN;
 class module_NewsDisplay extends uDataModule {
 	public function SetupParents() {
 		$this->AddParent('module_NewsTicker','news_id','*');
-		$this->SetRewrite(array('{heading}','{news_id}'),true);
+		$this->SetRewrite(array('{news_id}','{heading}'),true);
 
 		//breadcrumb::AddModule('module_NewsArchive');
 	}
