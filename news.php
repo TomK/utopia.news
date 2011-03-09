@@ -307,6 +307,9 @@ class module_NewsDisplay extends uDataModule {
 		uBreadcrumb::AddCrumb('News &amp; Articles',CallModuleFunc('module_NewsArchive', 'GetURL'));
 		$ds = $this->GetDataset();
 		$rec = $this->GetRecord($ds,0);
+
+		if (!$rec) utopia::PageNotFound();
+
 		utopia::SetTitle($rec['heading']);
 		$img = '';
 /*		if ($rec['image']) {
