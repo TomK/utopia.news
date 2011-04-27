@@ -66,9 +66,10 @@ class module_NewsRSS extends uDataModule {
 
     $rows = $this->GetRows();
     $items = '';
+    $obj = utopia::GetInstance('module_NewsDisplay');
     foreach ($rows as $row) {
       $crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
-      $link = htmlentities('http://'.$dom.CallModuleFunc('module_NewsDisplay','GetURL',array('news_id'=>$row['news_id'])));
+      $link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
       $img = '';
 //      if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
       $pubDate = date('r',strtotime($row['time']));
@@ -148,7 +149,7 @@ class module_NewsTicker extends uDataModule {
 		//$this->AddFilter('archive',ctEQ,itNONE,0);
 	}
 	public function ParentLoad($parent) {}
-	static function GetOutput() { ob_start(); CallModuleFunc('module_NewsTicker','RunModule'); $c = ob_get_contents(); ob_end_clean(); return $c; }
+	static function GetOutput() { ob_start(); $obj = utopia::GetInstance('module_NewsTicker'); $obj->RunModule(); $c = ob_get_contents(); ob_end_clean(); return $c; }
 	public function RunModule() {
 		$rows = $this->GetRows();
 		foreach ($rows as $id => $row) {
@@ -158,14 +159,16 @@ class module_NewsTicker extends uDataModule {
 		$rows = array_slice($rows,0,6);
 		module_NewsArchive::ShowRSSLink();
 		echo '<table>';
+		$obj = utopia::GetInstance('module_NewsDisplay');
 		if (empty($rows))
 			echo '<tr><td colspan="0">No news to display.</td></tr>';
 		else foreach ($rows as $row) {
 			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
-			$link = CallModuleFunc('module_NewsDisplay','GetURL',array('news_id'=>$row['news_id']));
+			$link = $obj->GetURL(array('news_id'=>$row['news_id']));
 			echo "<tr><td style=\"vertical-align:top;white-space:nowrap;\">{$row['time']}</td><td><a href=\"{$link}\">{$row['heading']}</a><br><span class=\"newsDescription\">{$row['description']}</span></td></tr>";
 		}
-		echo '<tr><td colspan="2"><a href="'.CallModuleFunc('module_NewsArchive','GetURL').'">News Archive</a></td></tr>';
+		$obj = utopia::GetInstance('module_NewsArchive');
+		echo '<tr><td colspan="2"><a href="'.$obj->GetURL().'">News Archive</a></td></tr>';
 		echo '</table>';
 
 		//utopia::AppendVar('head','<link rel="alternate" type="application/rss+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$this->GetURL(array('__ajax'=>'getNewsRSS')).'" />');
@@ -205,7 +208,8 @@ class module_NewsArchive extends uDataModule {
 	static $rssShown = false;
 	public static function ShowRSSLink() {
 		if (self::$rssShown) return;
-		utopia::AppendVar('</head>','<link rel="alternate" type="application/atom+xml" title="'.utopia::GetDomainName().' News Feed" href="'.CallModuleFunc(__CLASS__,'GetURL',array('__ajax'=>'getNewsRSS')).'" />'."\n");
+		$obj = utopia::GetInstance(__CLASS__);
+		utopia::AppendVar('</head>','<link rel="alternate" type="application/atom+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$obj->GetURL(array('__ajax'=>'getNewsRSS')).'" />'."\n");
 		self::$rssShown = true;
 	}
 	public function ParentLoad($parent) {}
@@ -215,6 +219,7 @@ class module_NewsArchive extends uDataModule {
 		$ds = $this->GetDataset();
 		$rows = GetRows($ds);
 
+		$obj = utopia::GetInstance('module_NewsDisplay');
 		$month = NULL;
 		echo '<table class="newsTable">';
 		foreach ($rows as $row) {
@@ -225,7 +230,7 @@ class module_NewsArchive extends uDataModule {
 				$month = $currMonth;
 				echo '<tr><td colspan="2"><h2>'.$currMonth.'</h2></td></tr>';
 			}
-			$url = CallModuleFunc('module_NewsDisplay','GetURL',$row['news_id']);
+			$url = $obj->GetURL($row['news_id']);
 			echo '<tr><td style="padding-right:1em">'.$day.'</td><td><span class="newsHeading"><a href="'.$url.'">'.$row['heading'].'</a></span><br><span class="newsDescription">'.$row['description'].'</span></td></tr>';
 		}
 		echo '</table>';
@@ -235,11 +240,12 @@ class module_NewsArchive extends uDataModule {
 		$dom = utopia::GetDomainName();
 		$date = date('r');
 
+		$obj = utopia::GetInstance('module_NewsDisplay');
 		$rows = $this->GetRows();
 		$items = '';
 		foreach ($rows as $row) {
 			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
-			$link = htmlentities('http://'.$dom.CallModuleFunc('module_NewsDisplay','GetURL',array('news_id'=>$row['news_id'])));
+			$link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
 			$img = '';
 			//if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
 			$pubDate = date('r',strtotime($row['time']));
@@ -304,7 +310,8 @@ class module_NewsDisplay extends uDataModule {
 	public function GetUUID() { return 'news'; }
 	public function ParentLoad($parent) {}
 	public function RunModule() {
-		uBreadcrumb::AddCrumb('News &amp; Articles',CallModuleFunc('module_NewsArchive', 'GetURL'));
+		$obj = utopia::GetInstance('module_NewsArchive');
+		uBreadcrumb::AddCrumb('News &amp; Articles',$obj->GetURL());
 		$ds = $this->GetDataset();
 		$rec = $this->GetRecord($ds,0);
 
