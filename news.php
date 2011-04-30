@@ -33,7 +33,6 @@ class module_NewsAdmin extends uListDataModule {
 		$this->AddFilter('time',ctGTEQ,itDATE);
 		$this->AddFilter('time',ctLTEQ,itDATE);
 	}
-	public function ParentLoad($parent) {}
 	public function RunModule() {
 		$this->ShowData();
 	}
@@ -58,7 +57,6 @@ class module_NewsRSS extends uDataModule {
     $this->AddField('archive','archive','news','Archive',itCHECKBOX);
     $this->AddOrderBy('time','desc');
   }
-  public function ParentLoad($parent) {}
   public function RunModule() {
     utopia::CancelTemplate();
     $dom = utopia::GetDomainName();
@@ -124,7 +122,6 @@ class module_NewsAdminDetail extends uSingleDataModule {
 		//$this->SetFieldProperty('image','length',150);
 		$this->AddField('archive','archive','news','Archive',itCHECKBOX);
 	}
-	public function ParentLoad($parent) {}
 	public function RunModule() {
 		$this->ShowData();
 	}
@@ -148,7 +145,6 @@ class module_NewsTicker extends uDataModule {
 		$this->AddField('archive','archive','news');
 		//$this->AddFilter('archive',ctEQ,itNONE,0);
 	}
-	public function ParentLoad($parent) {}
 	static function GetOutput() { ob_start(); $obj = utopia::GetInstance('module_NewsTicker'); $obj->RunModule(); $c = ob_get_contents(); ob_end_clean(); return $c; }
 	public function RunModule() {
 		$rows = $this->GetRows();
@@ -212,7 +208,6 @@ class module_NewsArchive extends uDataModule {
 		utopia::AppendVar('</head>','<link rel="alternate" type="application/atom+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$obj->GetURL(array('__ajax'=>'getNewsRSS')).'" />'."\n");
 		self::$rssShown = true;
 	}
-	public function ParentLoad($parent) {}
 	public function RunModule() {
 		self::ShowRSSLink();
 		echo '<h1>News &amp; Articles</h1>';
@@ -308,7 +303,6 @@ class module_NewsDisplay extends uDataModule {
 		//$this->AddField('image','image','news','image');
 	}
 	public function GetUUID() { return 'news'; }
-	public function ParentLoad($parent) {}
 	public function RunModule() {
 		$obj = utopia::GetInstance('module_NewsArchive');
 		uBreadcrumb::AddCrumb('News &amp; Articles',$obj->GetURL());
