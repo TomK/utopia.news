@@ -16,12 +16,12 @@ class tabledef_NewsTable extends uTableDef {
 	}
 }
 
-class module_NewsAdmin extends uListDataModule {
+class module_NewsAdmin extends uListDataModule implements iAdminModule {
 	public function SetupParents() {
 		$this->AddParent('internalmodule_Admin');
 	}
 	public function GetTitle() { return 'News List'; }
-	public function GetOptions() { return IS_ADMIN | ALLOW_DELETE | ALLOW_FILTER; }
+	public function GetOptions() { return ALLOW_DELETE | ALLOW_FILTER; }
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
 	public function SetupFields() {
 		$this->CreateTable('news');
@@ -99,14 +99,14 @@ FIN;
   }
 }
 
-class module_NewsAdminDetail extends uSingleDataModule {
+class module_NewsAdminDetail extends uSingleDataModule implements iAdminModule {
 	public function SetupParents() {
     $this->AddParent('module_NewsAdmin','news_id','*');
 		$this->AddParent('module_NewsAdmin');
 		//breadcrumb::AddModule('module_NewsAdmin');
 	}
 	public function GetTitle() { return 'Edit News Item'; }
-	public function GetOptions() { return IS_ADMIN | ALLOW_DELETE | ALLOW_FILTER | ALLOW_ADD | NO_NAV | ALLOW_EDIT; }
+	public function GetOptions() { return ALLOW_DELETE | ALLOW_FILTER | ALLOW_ADD | NO_NAV | ALLOW_EDIT; }
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
 	public function SetupFields() {
 		$this->CreateTable('news');
