@@ -60,28 +60,30 @@ class module_NewsRSS extends uDataModule {
   public function RunModule() {
     utopia::CancelTemplate();
     $dom = utopia::GetDomainName();
-    $date = date('r');
 
     $rows = $this->GetRows();
     $items = '';
     $obj = utopia::GetInstance('module_NewsDisplay');
+    $pubDate = null;
     foreach ($rows as $row) {
       $crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
       $link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
       $img = '';
 //      if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
-      $pubDate = date('r',strtotime($row['time']));
+      $updated = date('r',strtotime($row['time']));
+      if (!$pubDate || (strtotime($row['time']) > $pubDate)) $pubDate = strtotime($row['time']);
+echo $pubDate.'aaa';
       $items .= <<<FIN
  <item>
   <title>{$row['heading']}</title>
   <description>{$row['description']}</description>
   <link>{$link}</link>
   <guid isPermaLink="false">{$link}</guid>
-  <pubDate>{$pubDate}</pubDate>{$img}
+  <pubDate>{$updated}</pubDate>{$img}
  </item>
 FIN;
     }
-
+    $pubDate = date('r',$pubDate);
     header('Content-Type: application/rss+xml',true);
     $self = htmlentities('http://'.$dom.$_SERVER['REQUEST_URI']);
     echo <<<FIN
@@ -90,7 +92,7 @@ FIN;
  <title>{$dom} News Feed</title>
  <description>Latest news from {$dom}</description>
  <link>http://{$dom}</link>
- <lastBuildDate>{$date}</lastBuildDate>
+ <lastBuildDate>{$pubDate}</lastBuildDate>
  <language>en-gb</language>
  <ttl>15</ttl>
 {$items}
@@ -233,7 +235,7 @@ class module_NewsArchive extends uDataModule {
 
 	public function getRSS() {
 		$dom = utopia::GetDomainName();
-		$date = date('r');
+		$pubDate = null;
 
 		$obj = utopia::GetInstance('module_NewsDisplay');
 		$rows = $this->GetRows();
@@ -243,18 +245,20 @@ class module_NewsArchive extends uDataModule {
 			$link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
 			$img = '';
 			//if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
-			$pubDate = date('r',strtotime($row['time']));
+			$updated = date('r',strtotime($row['time']));
+			if ($pubDate == null || (strtotime($row['time']) > $pubDate)) $pubDate = strtotime($row['time']);
 			$items .= <<<FIN
  <item>
   <title>{$row['heading']}</title>
   <description>{$row['description']}</description>
   <link>{$link}</link>
   <guid isPermaLink="false">{$link}</guid>
-  <pubDate>{$pubDate}</pubDate>{$img}
+  <pubDate>{$updated}</pubDate>{$img}
  </item>
 FIN;
 		}
 
+		$pubDate = date('r',$pubDate);
 		header('Content-Type: application/rss+xml',true);
 		$self = htmlentities('http://'.$dom.$_SERVER['REQUEST_URI']);
 		echo <<<FIN
@@ -263,7 +267,7 @@ FIN;
  <title>{$dom} News Feed</title>
  <description>Latest news from {$dom}</description>
  <link>http://{$dom}</link>
- <lastBuildDate>{$date}</lastBuildDate>
+ <lastBuildDate>{$pubDate}</lastBuildDate>
  <language>en-gb</language>
  <ttl>15</ttl>
 {$items}
