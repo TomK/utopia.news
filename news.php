@@ -291,10 +291,9 @@ FIN;
 
 class module_NewsDisplay extends uDataModule {
 	public function SetupParents() {
-		$this->AddParent('module_NewsTicker','news_id','*');
 		$this->SetRewrite(array('{news_id}','{heading}'),true);
 
-		//breadcrumb::AddModule('module_NewsArchive');
+		uSearch::AddSearchRecipient(__CLASS__,array('heading','text'),'heading','text');
 	}
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
 	public function SetupFields() {
@@ -303,8 +302,7 @@ class module_NewsDisplay extends uDataModule {
 		$this->SetFieldType('time',ftDATE);
 		$this->AddField('heading','heading','news','heading');
 		$this->AddField('text','text','news','text');
-		$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
-		//$this->AddField('image','image','news','image');
+		$this->AddFilter('news_id',ctEQ);
 	}
 	public function GetUUID() { return 'news'; }
 	public function RunModule() {
@@ -330,5 +328,3 @@ $img
 FIN;
 	}
 }
-
-?>
