@@ -72,7 +72,6 @@ class module_NewsRSS extends uDataModule {
 //      if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
       $updated = date('r',strtotime($row['time']));
       if (!$pubDate || (strtotime($row['time']) > $pubDate)) $pubDate = strtotime($row['time']);
-echo $pubDate.'aaa';
       $items .= <<<FIN
  <item>
   <title>{$row['heading']}</title>
