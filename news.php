@@ -39,40 +39,45 @@ class module_NewsAdmin extends uListDataModule implements iAdminModule {
 }
 
 class module_NewsRSS extends uDataModule {
-  public function SetupParents() { 
-    $this->SetRewrite(true);
-  }
-  public function GetUUID() { return 'news-rss'; }
-  public function GetTitle() { return 'News RSS'; }
-  public function GetOptions() { return ALLOW_FILTER; }
-  public function GetTabledef() { return 'tabledef_NewsTable'; }
-  public function SetupFields() {
-    $this->CreateTable('news');
-    $this->AddField('time','time','news','Date',itDATE);
-    $this->AddField('heading','heading','news','Heading',itTEXT);
-    $this->AddField('description','description','news','Description',itTEXT);
-    $this->AddField('tags','tags','news','Tags',itTEXT);
-    $this->AddField('text','text','news','Content',itHTML);
-//    $this->AddField('image','image','news','Image',itFILE);
-    $this->AddField('archive','archive','news','Archive',itCHECKBOX);
-    $this->AddOrderBy('time','desc');
-  }
-  public function RunModule() {
-    utopia::CancelTemplate();
-    $dom = utopia::GetDomainName();
+	public function SetupParents() { 
+		$this->SetRewrite(true);
+		$this->AddParentCallback('/',array($this,'addAltLink'));
+	}
+	public function addAltLink() {
+		utopia::AppendVar('head','<link rel="alternate" type="application/atom+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$this->GetURL().'" />');
+	}
 
-    $rows = $this->GetRows();
-    $items = '';
-    $obj = utopia::GetInstance('module_NewsDisplay');
-    $pubDate = null;
-    foreach ($rows as $row) {
-      $crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
-      $link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
-      $img = '';
-//      if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
-      $updated = date('r',strtotime($row['time']));
-      if (!$pubDate || (strtotime($row['time']) > $pubDate)) $pubDate = strtotime($row['time']);
-      $items .= <<<FIN
+	public function GetUUID() { return 'news-rss'; }
+	public function GetTitle() { return 'News RSS'; }
+	public function GetOptions() { return ALLOW_FILTER; }
+	public function GetTabledef() { return 'tabledef_NewsTable'; }
+	public function SetupFields() {
+		$this->CreateTable('news');
+		$this->AddField('time','time','news','Date',itDATE);
+		$this->AddField('heading','heading','news','Heading',itTEXT);
+		$this->AddField('description','description','news','Description',itTEXT);
+		$this->AddField('tags','tags','news','Tags',itTEXT);
+		$this->AddField('text','text','news','Content',itHTML);
+//    $this->AddField('image','image','news','Image',itFILE);
+		$this->AddField('archive','archive','news','Archive',itCHECKBOX);
+		$this->AddOrderBy('time','desc');
+	}
+	public function RunModule() {
+		utopia::CancelTemplate();
+		$dom = utopia::GetDomainName();
+
+		$rows = $this->GetRows();
+		$items = '';
+		$obj = utopia::GetInstance('module_NewsDisplay');
+		$pubDate = null;
+		foreach ($rows as $row) {
+			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
+			$link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
+			$img = '';
+//			if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
+			$updated = date('r',strtotime($row['time']));
+			if (!$pubDate || (strtotime($row['time']) > $pubDate)) $pubDate = strtotime($row['time']);
+			$items .= <<<FIN
  <item>
   <title>{$row['heading']}</title>
   <description>{$row['description']}</description>
@@ -81,11 +86,12 @@ class module_NewsRSS extends uDataModule {
   <pubDate>{$updated}</pubDate>{$img}
  </item>
 FIN;
-    }
-    $pubDate = date('r',$pubDate);
-    header('Content-Type: application/rss+xml',true);
-    $self = htmlentities('http://'.$dom.$_SERVER['REQUEST_URI']);
-    echo <<<FIN
+		}
+		$pubDate = date('r',$pubDate);
+
+		header('Content-Type: application/rss+xml',true);
+		$self = htmlentities('http://'.$dom.$_SERVER['REQUEST_URI']);
+		echo <<<FIN
 <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel>
  <atom:link href="{$self}" rel="self" type="application/rss+xml" />
  <title>{$dom} News Feed</title>
@@ -97,12 +103,12 @@ FIN;
 {$items}
 </channel></rss>
 FIN;
-  }
+	}
 }
 
 class module_NewsAdminDetail extends uSingleDataModule implements iAdminModule {
 	public function SetupParents() {
-    $this->AddParent('module_NewsAdmin','news_id','*');
+		$this->AddParent('module_NewsAdmin','news_id','*');
 		$this->AddParent('module_NewsAdmin');
 		//breadcrumb::AddModule('module_NewsAdmin');
 	}
@@ -116,8 +122,8 @@ class module_NewsAdminDetail extends uSingleDataModule implements iAdminModule {
 		$this->AddField('description','description','news','Description',itTEXT);
 		$this->FieldStyles_Set('description',array('width'=>'60%'));
 		$this->AddField('tags','tags','news','Tags',itTEXT);
-    $this->FieldStyles_Set('tags',array('width'=>'60%'));
-    $this->AddField('text','text','news','Content',itHTML);
+		$this->FieldStyles_Set('tags',array('width'=>'60%'));
+		$this->AddField('text','text','news','Content',itHTML);
 		$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
 		//$this->AddField('image','image','news','Image',itFILE);
 		//$this->SetFieldProperty('image','length',150);
@@ -154,7 +160,6 @@ class module_NewsTicker extends uDataModule {
 		}
 
 		$rows = array_slice($rows,0,6);
-		module_NewsArchive::ShowRSSLink();
 		echo '<table>';
 		$obj = utopia::GetInstance('module_NewsDisplay');
 		if (empty($rows))
@@ -167,9 +172,6 @@ class module_NewsTicker extends uDataModule {
 		$obj = utopia::GetInstance('module_NewsArchive');
 		echo '<tr><td colspan="2"><a href="'.$obj->GetURL().'">News Archive</a></td></tr>';
 		echo '</table>';
-
-		//utopia::AppendVar('head','<link rel="alternate" type="application/rss+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$this->GetURL(array('__ajax'=>'getNewsRSS')).'" />');
-//		utopia::AppendVar('head','<link rel="alternate" type="application/atom+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$this->GetURL(array('__ajax'=>'getNewsRSS')).'" />');
 	}
 
 //	public function GetRows() {
@@ -181,7 +183,6 @@ class module_NewsTicker extends uDataModule {
 
 class module_NewsArchive extends uDataModule {
 	public function SetupParents() {
-		$this->RegisterAjax('getNewsRSS',array($this,'getRSS'));
 		$this->SetRewrite(true);
 	}
 	public function GetUUID() { return 'news-archive'; }
@@ -203,14 +204,7 @@ class module_NewsArchive extends uDataModule {
 		$this->AddOrderBy('time');
 	}
 	static $rssShown = false;
-	public static function ShowRSSLink() {
-		if (self::$rssShown) return;
-		$obj = utopia::GetInstance(__CLASS__);
-		utopia::AppendVar('</head>','<link rel="alternate" type="application/atom+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$obj->GetURL(array('__ajax'=>'getNewsRSS')).'" />'."\n");
-		self::$rssShown = true;
-	}
 	public function RunModule() {
-		self::ShowRSSLink();
 		echo '<h1>News &amp; Articles</h1>';
 		$ds = $this->GetDataset();
 		$rows = GetRows($ds);
