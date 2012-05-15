@@ -18,7 +18,7 @@ class tabledef_NewsTable extends uTableDef {
 
 class module_NewsAdmin extends uListDataModule implements iAdminModule {
 	public function SetupParents() {
-		$this->AddParent('internalmodule_Admin');
+		$this->AddParent('');
 	}
 	public function GetTitle() { return 'News List'; }
 	public function GetOptions() { return ALLOW_DELETE | ALLOW_FILTER; }
@@ -295,15 +295,14 @@ class module_NewsDisplay extends uDataModule {
 		$this->SetFieldType('time',ftDATE);
 		$this->AddField('heading','heading','news','heading');
 		$this->AddField('text','text','news','text');
+		$this->AddField('description','description','news','description');
 		$this->AddFilter('news_id',ctEQ);
 	}
 	public function GetUUID() { return 'news'; }
 	public function RunModule() {
 		$obj = utopia::GetInstance('module_NewsArchive');
 		uBreadcrumb::AddCrumb('News &amp; Articles',$obj->GetURL());
-		$ds = $this->GetDataset();
-		$rec = $this->GetRecord($ds,0);
-
+		$rec = $this->LookupRecord();
 		if (!$rec) utopia::PageNotFound();
 
 		utopia::SetTitle($rec['heading']);
