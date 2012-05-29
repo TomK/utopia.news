@@ -9,7 +9,7 @@ class tabledef_NewsTable extends uTableDef {
 		$this->AddField('description',ftVARCHAR,150);
 		$this->AddField('tags',ftTEXT);
 		$this->AddField('text',ftTEXT);
-//		$this->AddField('image',ftIMAGE);
+		$this->AddField('image',ftIMAGE);
 		$this->AddField('archive',ftBOOL);
 
 		$this->SetPrimaryKey('news_id');
@@ -25,13 +25,41 @@ class module_NewsAdmin extends uListDataModule implements iAdminModule {
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
 	public function SetupFields() {
 		$this->CreateTable('news');
-		$this->AddField('time','time','news','time');
-		$this->AddField('heading','heading','news','heading');
-		//$this->AddField('text','text','news','text');
-		//$this->AddField('image','image','news','image');
+		$this->AddField('time','time','news','Posted');
+		$this->AddField('heading','heading','news','Title');
 		
 		$this->AddFilter('time',ctGTEQ,itDATE);
 		$this->AddFilter('time',ctLTEQ,itDATE);
+		$this->AddFilter('heading',ctLIKE,itTEXT);
+	}
+	public function RunModule() {
+		$this->ShowData();
+	}
+}
+
+class module_NewsAdminDetail extends uSingleDataModule implements iAdminModule {
+	public function SetupParents() {
+		$this->AddParent('module_NewsAdmin','news_id','*');
+		$this->AddParent('module_NewsAdmin');
+		//breadcrumb::AddModule('module_NewsAdmin');
+	}
+	public function GetTitle() { return 'Edit News Item'; }
+	public function GetOptions() { return ALLOW_DELETE | ALLOW_FILTER | ALLOW_ADD | NO_NAV | ALLOW_EDIT; }
+	public function GetTabledef() { return 'tabledef_NewsTable'; }
+	public function SetupFields() {
+		$this->CreateTable('news');
+		$this->AddField('time','time','news','Post Date',itDATE);
+		$this->AddField('heading','heading','news','Title',itTEXT);
+		$this->AddField('description','description','news','Description',itTEXT);
+		$this->FieldStyles_Set('description',array('width'=>'60%'));
+		$this->AddField('tags','tags','news','Tags',itTEXT);
+		$this->FieldStyles_Set('tags',array('width'=>'60%'));
+		$this->AddField('text','text','news','Content',itHTML);
+		$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'10em'));
+		$this->AddField('curr_image','image','news','Current Image');
+		$this->FieldStyles_Set('curr_image',array('height'=>100));
+		$this->AddField('image','image','news','Image',itFILE);
+		$this->AddField('archive','archive','news','Archive',itCHECKBOX);
 	}
 	public function RunModule() {
 		$this->ShowData();
@@ -41,10 +69,6 @@ class module_NewsAdmin extends uListDataModule implements iAdminModule {
 class module_NewsRSS extends uDataModule {
 	public function SetupParents() { 
 		$this->SetRewrite(true);
-		$this->AddParentCallback('/',array($this,'addAltLink'));
-	}
-	public function addAltLink() {
-		utopia::AppendVar('head','<link rel="alternate" type="application/atom+xml" title="'.utopia::GetDomainName().' News Feed" href="'.$this->GetURL().'" />');
 	}
 
 	public function GetUUID() { return 'news-rss'; }
@@ -58,7 +82,7 @@ class module_NewsRSS extends uDataModule {
 		$this->AddField('description','description','news','Description',itTEXT);
 		$this->AddField('tags','tags','news','Tags',itTEXT);
 		$this->AddField('text','text','news','Content',itHTML);
-//    $this->AddField('image','image','news','Image',itFILE);
+		$this->AddField('image','image','news','Image',itFILE);
 		$this->AddField('archive','archive','news','Archive',itCHECKBOX);
 		$this->AddOrderBy('time','desc');
 	}
@@ -74,7 +98,7 @@ class module_NewsRSS extends uDataModule {
 			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
 			$link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
 			$img = '';
-//			if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
+			if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
 			$updated = date('r',strtotime($row['time']));
 			if (!$pubDate || (strtotime($row['time']) > $pubDate)) $pubDate = strtotime($row['time']);
 			$items .= <<<FIN
@@ -106,186 +130,13 @@ FIN;
 	}
 }
 
-class module_NewsAdminDetail extends uSingleDataModule implements iAdminModule {
-	public function SetupParents() {
-		$this->AddParent('module_NewsAdmin','news_id','*');
-		$this->AddParent('module_NewsAdmin');
-		//breadcrumb::AddModule('module_NewsAdmin');
-	}
-	public function GetTitle() { return 'Edit News Item'; }
-	public function GetOptions() { return ALLOW_DELETE | ALLOW_FILTER | ALLOW_ADD | NO_NAV | ALLOW_EDIT; }
-	public function GetTabledef() { return 'tabledef_NewsTable'; }
-	public function SetupFields() {
-		$this->CreateTable('news');
-		$this->AddField('time','time','news','Date',itDATE);
-		$this->AddField('heading','heading','news','Heading',itTEXT);
-		$this->AddField('description','description','news','Description',itTEXT);
-		$this->FieldStyles_Set('description',array('width'=>'60%'));
-		$this->AddField('tags','tags','news','Tags',itTEXT);
-		$this->FieldStyles_Set('tags',array('width'=>'60%'));
-		$this->AddField('text','text','news','Content',itHTML);
-		$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
-		//$this->AddField('image','image','news','Image',itFILE);
-		//$this->SetFieldProperty('image','length',150);
-		$this->AddField('archive','archive','news','Archive',itCHECKBOX);
-	}
-	public function RunModule() {
-		$this->ShowData();
-	}
-}
-
-utopia::AddTemplateParser('newsticker','module_NewsTicker::GetOutput','');
-class module_NewsTicker extends uDataModule {
-	public function SetupParents() { }
-	public function GetTitle() { return ''; }
-	public function GetTabledef() { return 'tabledef_NewsTable'; }
-	public function SetupFields() {
-		$this->CreateTable('news');
-		$this->AddField('time','time','news','time');
-	//	$this->SetFieldType('time',ftDATE);
-		$this->AddField('heading','heading','news','heading');
-		$this->AddField('text','text','news','text');
-		$this->AddField('description','description','news','text');
-		//$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
-		//$this->AddField('image','image','news','image');
-		$this->AddOrderBy('`news`.`time`','DESC');
-		$this->AddField('archive','archive','news');
-		//$this->AddFilter('archive',ctEQ,itNONE,0);
-	}
-	static function GetOutput() { ob_start(); $obj = utopia::GetInstance('module_NewsTicker'); $obj->RunModule(); $c = ob_get_contents(); ob_end_clean(); return $c; }
-	public function RunModule() {
-		$rows = $this->GetRows();
-		foreach ($rows as $id => $row) {
-			if ($row['archive']) unset($rows[$id]);
-		}
-
-		$rows = array_slice($rows,0,6);
-		echo '<table>';
-		$obj = utopia::GetInstance('module_NewsDisplay');
-		if (empty($rows))
-			echo '<tr><td colspan="0">No news to display.</td></tr>';
-		else foreach ($rows as $row) {
-			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
-			$link = $obj->GetURL(array('news_id'=>$row['news_id']));
-			echo "<tr><td style=\"vertical-align:top;white-space:nowrap;\">{$row['time']}</td><td><a href=\"{$link}\">{$row['heading']}</a><br><span class=\"newsDescription\">{$row['description']}</span></td></tr>";
-		}
-		$obj = utopia::GetInstance('module_NewsArchive');
-		echo '<tr><td colspan="2"><a href="'.$obj->GetURL().'">News Archive</a></td></tr>';
-		echo '</table>';
-	}
-
-//	public function GetRows() {
-//		$ds = $this->GetDataset();
-//		return GetRows($ds);
-//	}
-}
-
-
-class module_NewsArchive extends uDataModule {
-	public function SetupParents() {
-		$this->SetRewrite(true);
-	}
-	public function GetUUID() { return 'news-archive'; }
-	public function GetTitle() { return 'News &amp; Articles'; }
-	public function GetTabledef() { return 'tabledef_NewsTable'; }
-	public function SetupFields() {
-		$this->CreateTable('news');
-		$this->AddField('time','time','news','time');
-	//	$this->SetFieldType('time',ftDATE);
-		$this->AddField('heading','heading','news','heading');
-		$this->AddField('text','text','news','text');
-		$this->AddField('description','description','news','text');
-		//$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'15em'));
-		//$this->AddField('image','image','news','image');
-		$this->AddOrderBy('`news`.`time`','DESC');
-		$this->AddField('archive','archive','news');
-		//$this->AddFilter('archive',ctEQ,itNONE,0);
-
-		$this->AddOrderBy('time');
-	}
-	static $rssShown = false;
-	public function RunModule() {
-		echo '<h1>News &amp; Articles</h1>';
-		$ds = $this->GetDataset();
-		$rows = GetRows($ds);
-
-		$obj = utopia::GetInstance('module_NewsDisplay');
-		$month = NULL;
-		echo '<table class="newsTable">';
-		foreach ($rows as $row) {
-			$time = strtotime($row['time']);
-			$currMonth = date('F Y',$time);
-			$day = date('jS F Y',$time);
-			if ($month != $currMonth) {
-				$month = $currMonth;
-				echo '<tr><td colspan="2"><h2>'.$currMonth.'</h2></td></tr>';
-			}
-			$url = $obj->GetURL($row['news_id']);
-			echo '<tr><td style="padding-right:1em">'.$day.'</td><td><span class="newsHeading"><a href="'.$url.'">'.$row['heading'].'</a></span><br><span class="newsDescription">'.$row['description'].'</span></td></tr>';
-		}
-		echo '</table>';
-	}
-
-	public function getRSS() {
-		$dom = utopia::GetDomainName();
-		$pubDate = null;
-
-		$obj = utopia::GetInstance('module_NewsDisplay');
-		$rows = $this->GetRows();
-		$items = '';
-		foreach ($rows as $row) {
-			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
-			$link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
-			$img = '';
-			//if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLinkFromTable('image','news','news_id',$row['news_id'],150)).'"/>';
-			$updated = date('r',strtotime($row['time']));
-			if ($pubDate == null || (strtotime($row['time']) > $pubDate)) $pubDate = strtotime($row['time']);
-			$items .= <<<FIN
- <item>
-  <title>{$row['heading']}</title>
-  <description>{$row['description']}</description>
-  <link>{$link}</link>
-  <guid isPermaLink="false">{$link}</guid>
-  <pubDate>{$updated}</pubDate>{$img}
- </item>
-FIN;
-		}
-
-		$pubDate = date('r',$pubDate);
-		header('Content-Type: application/rss+xml',true);
-		$self = htmlentities('http://'.$dom.$_SERVER['REQUEST_URI']);
-		echo <<<FIN
-<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel>
- <atom:link href="{$self}" rel="self" type="application/rss+xml" />
- <title>{$dom} News Feed</title>
- <description>Latest news from {$dom}</description>
- <link>http://{$dom}</link>
- <lastBuildDate>{$pubDate}</lastBuildDate>
- <language>en-gb</language>
- <ttl>15</ttl>
-{$items}
-</channel></rss>
-FIN;
-		/*
- <link></link>
- <description></description>
- <copyright></copyright>
- <image>
-  <title>BBC News</title>
-  <url>http://news.bbc.co.uk/nol/shared/img/bbc_news_120x60.gif</url>
-  <link>http://news.bbc.co.uk/go/rss/-/1/hi/uk/default.stm</link>
- </image>*/
-	}
-//	public function GetRows() {
-//		$ds = $this->GetDataset();
-//		return GetRows($ds);
-//	}
-}
-
 class module_NewsDisplay extends uDataModule {
 	public function SetupParents() {
-		$this->SetRewrite(array('{news_id}','{heading}'),true);
-
+		$this->SetRewrite('{heading}-{news_id}',true);
+		modOpts::AddOption('news_per_page','News Articles Per Page','News',2);
+		modOpts::AddOption('news_widget_archive','News Archive Widget','News','news-archive');
+		modOpts::AddOption('news_widget_article','News Article Widget','News','news-article');
+		
 		uSearch::AddSearchRecipient(__CLASS__,array('heading','text'),'heading','text');
 	}
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
@@ -296,27 +147,35 @@ class module_NewsDisplay extends uDataModule {
 		$this->AddField('heading','heading','news','heading');
 		$this->AddField('text','text','news','text');
 		$this->AddField('description','description','news','description');
+		$this->AddField('image','image','news','image');
 		$this->AddFilter('news_id',ctEQ);
+		
+		$this->AddOrderBy('time');
 	}
 	public function GetUUID() { return 'news'; }
 	public function RunModule() {
-		$obj = utopia::GetInstance('module_NewsArchive');
-		uBreadcrumb::AddCrumb('News &amp; Articles',$obj->GetURL());
-		$rec = $this->LookupRecord();
-		if (!$rec) utopia::PageNotFound();
+		if (isset($_GET['news_id'])) {
+			$rec = $this->LookupRecord();
+			if (!$rec) utopia::PageNotFound();
+			utopia::SetTitle($rec['heading']);
+			utopia::SetDescription($rec['description']);
 
-		utopia::SetTitle($rec['heading']);
-		$img = '';
-/*		if ($rec['image']) {
-			$imgLink = $this->GetImageLinkFromTable('image','news','news_id',$rec['news_id'],300);
-			$img = '<img src="'.$imgLink.'" style="float:right;margin-right:30px;margin-top:30px">';
-		}*/
-		$text = nl2br($rec['text']);
-		echo <<<FIN
-$img
-<h1>{$rec['heading']}</h1>
-<p>{$rec['time']}</p>
-<p>$text</p>
-FIN;
+			echo '{widget.'.modOpts::GetOption('news_widget_article').'}';
+			return;
+		}
+		utopia::SetTitle('News Archive');
+		echo '{widget.'.modOpts::GetOption('news_widget_archive').'}';
+		uEvents::AddCallback('ProcessDomDocument',array($this,'AddRssLink'));
+	}
+	public function AddRssLink($o,$e,$doc) {
+		$rssobj = utopia::GetInstance('module_NewsRSS');
+		$link = $doc->createElement('link');
+		$link->setAttribute('rel','alternate');
+		$link->setAttribute('type','application/atom+xml');
+		$link->setAttribute('title',utopia::GetDomainName().' News Feed');
+		$link->setAttribute('href',$rssobj->GetURL());
+
+		$head = $doc->getElementsByTagName('head')->item(0);
+		$head->appendChild($link);
 	}
 }
