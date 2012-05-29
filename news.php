@@ -89,6 +89,7 @@ class module_NewsRSS extends uDataModule {
 	public function RunModule() {
 		utopia::CancelTemplate();
 		$dom = utopia::GetDomainName();
+		$siteName = modOpts::GetOption('site_name');
 
 		$rows = $this->GetRows();
 		$items = '';
@@ -118,8 +119,8 @@ FIN;
 		echo <<<FIN
 <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel>
  <atom:link href="{$self}" rel="self" type="application/rss+xml" />
- <title>{$dom} News Feed</title>
- <description>Latest news from {$dom}</description>
+ <title>{$siteName} News Feed</title>
+ <description>Latest news from {$siteName}</description>
  <link>http://{$dom}</link>
  <lastBuildDate>{$pubDate}</lastBuildDate>
  <language>en-gb</language>
@@ -154,8 +155,9 @@ class module_NewsDisplay extends uDataModule {
 	}
 	public function GetUUID() { return 'news'; }
 	public function RunModule() {
+		uEvents::AddCallback('ProcessDomDocument',array($this,'ProcessDomDocument'));
 		if (isset($_GET['news_id'])) {
-			$rec = $this->LookupRecord();
+			$rec = $this->LookupRecord($_GET['news_id']);
 			if (!$rec) utopia::PageNotFound();
 			utopia::SetTitle($rec['heading']);
 			utopia::SetDescription($rec['description']);
@@ -165,17 +167,28 @@ class module_NewsDisplay extends uDataModule {
 		}
 		utopia::SetTitle('News Archive');
 		echo '{widget.'.modOpts::GetOption('news_widget_archive').'}';
-		uEvents::AddCallback('ProcessDomDocument',array($this,'AddRssLink'));
 	}
-	public function AddRssLink($o,$e,$doc) {
+	public function ProcessDomDocument($o,$e,$doc) {
+		$head = $doc->getElementsByTagName('head')->item(0);
+		
+		// add OG protocol
+		if (isset($_GET['news_id'])) {
+			$rec = $this->LookupRecord($_GET['news_id']);
+			$img = 'http://'.utopia::GetDomainName().$this->GetImageLink('image',$rec['news_id']);
+			$meta = $doc->createElement('meta'); $meta->setAttribute('property','og:title'); $meta->setAttribute('content',$rec['heading']); $head->appendChild($meta);
+			$meta = $doc->createElement('meta'); $meta->setAttribute('property','og:url'); $meta->setAttribute('content','http://'.utopia::GetDomainName().$_SERVER['REQUEST_URI']); $head->appendChild($meta);
+			$meta = $doc->createElement('meta'); $meta->setAttribute('property','og:image'); $meta->setAttribute('content',$img); $head->appendChild($meta);
+			$meta = $doc->createElement('meta'); $meta->setAttribute('property','og:site_name'); $meta->setAttribute('content',modOpts::GetOption('site_name')); $head->appendChild($meta);
+			$meta = $doc->createElement('meta'); $meta->setAttribute('property','og:description'); $meta->setAttribute('content',$rec['description']); $head->appendChild($meta);
+		}
+
+		// add RSS link
 		$rssobj = utopia::GetInstance('module_NewsRSS');
 		$link = $doc->createElement('link');
 		$link->setAttribute('rel','alternate');
 		$link->setAttribute('type','application/atom+xml');
-		$link->setAttribute('title',utopia::GetDomainName().' News Feed');
+		$link->setAttribute('title',modOpts::GetOption('site_name').' News Feed');
 		$link->setAttribute('href',$rssobj->GetURL());
-
-		$head = $doc->getElementsByTagName('head')->item(0);
 		$head->appendChild($link);
 	}
 }
