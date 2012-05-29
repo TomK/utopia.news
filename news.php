@@ -149,7 +149,6 @@ class module_NewsDisplay extends uDataModule {
 		$this->AddField('text','text','news','text');
 		$this->AddField('description','description','news','description');
 		$this->AddField('image','image','news','image');
-		$this->AddFilter('news_id',ctEQ);
 		
 		$this->AddOrderBy('time');
 	}
