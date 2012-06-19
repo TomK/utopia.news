@@ -5,10 +5,10 @@ class tabledef_NewsTable extends uTableDef {
 	public function SetupFields() {
 		$this->AddField('news_id',ftNUMBER);
 		$this->AddField('time',ftDATE);
-		$this->AddField('heading',ftVARCHAR,50);
-		$this->AddField('description',ftVARCHAR,150);
+		$this->AddField('heading',ftVARCHAR,150);
+		$this->AddField('description',ftTEXT);
 		$this->AddField('tags',ftTEXT);
-		$this->AddField('text',ftTEXT);
+		$this->AddField('text',ftLONGTEXT);
 		$this->AddField('image',ftIMAGE);
 		$this->AddField('archive',ftBOOL);
 
