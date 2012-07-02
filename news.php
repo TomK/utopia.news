@@ -40,8 +40,6 @@ class module_NewsAdmin extends uListDataModule implements iAdminModule {
 class module_NewsAdminDetail extends uSingleDataModule implements iAdminModule {
 	public function SetupParents() {
 		$this->AddParent('module_NewsAdmin','news_id','*');
-		$this->AddParent('module_NewsAdmin');
-		//breadcrumb::AddModule('module_NewsAdmin');
 	}
 	public function GetTitle() { return 'Edit News Item'; }
 	public function GetOptions() { return ALLOW_DELETE | ALLOW_FILTER | ALLOW_ADD | NO_NAV | ALLOW_EDIT; }
