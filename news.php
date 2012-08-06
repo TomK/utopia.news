@@ -148,6 +148,10 @@ class module_NewsDisplay extends uDataModule {
 		$this->AddField('description','description','news','description');
 		$this->AddField('image','image','news','image');
 		
+		if (isset($_GET['news_id'])) {
+			$this->AddFilter('news_id',ctEQ,itNONE,$_GET['news_id']);
+		}
+		
 		$this->AddOrderBy('time');
 	}
 	public function GetUUID() { return 'news'; }
