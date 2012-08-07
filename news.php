@@ -148,6 +148,7 @@ class module_NewsDisplay extends uDataModule {
 		$this->AddField('description','description','news','description');
 		$this->AddField('image','image','news','image');
 		
+		$this->AddFilter('news_id',ctEQ,itNONE);
 		if (isset($_GET['news_id'])) {
 			$this->AddFilter('news_id',ctEQ,itNONE,$_GET['news_id']);
 		}
