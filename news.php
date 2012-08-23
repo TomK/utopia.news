@@ -153,7 +153,7 @@ class module_NewsDisplay extends uDataModule {
 			$this->AddFilter('news_id',ctEQ,itNONE,$_GET['news_id']);
 		}
 		
-		$this->AddOrderBy('time');
+		$this->AddOrderBy('time','desc');
 	}
 	public function GetUUID() { return 'news'; }
 	public function RunModule() {
