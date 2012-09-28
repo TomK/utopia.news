@@ -130,6 +130,7 @@ FIN;
 }
 
 class module_NewsDisplay extends uDataModule {
+	public function GetTitle() { return 'Latest News'; }
 	public function SetupParents() {
 		$this->SetRewrite('{heading}-{news_id}',true);
 		modOpts::AddOption('news_per_page','News Articles Per Page','News',2);
@@ -167,7 +168,6 @@ class module_NewsDisplay extends uDataModule {
 			echo '{widget.'.modOpts::GetOption('news_widget_article').'}';
 			return;
 		}
-		utopia::SetTitle('News Archive');
 		echo '{widget.'.modOpts::GetOption('news_widget_archive').'}';
 	}
 	public function ProcessDomDocument($o,$e,$doc) {
