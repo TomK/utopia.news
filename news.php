@@ -97,7 +97,7 @@ class module_NewsRSS extends uDataModule {
 			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
 			$link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
 			$img = '';
-			if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.$this->GetImageLink('image',$row['news_id'],150,150)).'"/>';
+			if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.uBlob(get_class($this),'image',$row['news_id'],150,150)).'"/>';
 			$updated = date('r',strtotime($row['time']));
 			if (!$pubDate || (strtotime($row['time']) > $pubDate)) $pubDate = strtotime($row['time']);
 			$items .= <<<FIN
@@ -176,7 +176,7 @@ class module_NewsDisplay extends uDataModule {
 		// add OG protocol
 		if (isset($_GET['news_id'])) {
 			$rec = $this->LookupRecord($_GET['news_id']);
-			$img = 'http://'.utopia::GetDomainName().$this->GetImageLink('image',$rec['news_id']);
+			$img = 'http://'.utopia::GetDomainName().uBlob::GetLink(get_class($this),'image',$rec['news_id']);
 			$meta = $doc->createElement('meta'); $meta->setAttribute('property','og:title'); $meta->setAttribute('content',$rec['heading']); $head->appendChild($meta);
 			$meta = $doc->createElement('meta'); $meta->setAttribute('property','og:url'); $meta->setAttribute('content','http://'.utopia::GetDomainName().$_SERVER['REQUEST_URI']); $head->appendChild($meta);
 			$meta = $doc->createElement('meta'); $meta->setAttribute('property','og:image'); $meta->setAttribute('content',$img); $head->appendChild($meta);
