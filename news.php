@@ -218,6 +218,7 @@ class module_NewsDisplay extends uDataModule {
 			echo '{widget.'.modOpts::GetOption('news_widget_article').'}';
 			return;
 		}
+		if (isset($_GET['tags'])) utopia::SetTitle('Latest '.ucwords($_GET['tags']).' News');
 		echo '{widget.'.modOpts::GetOption('news_widget_archive').'}';
 	}
 	public function ppTag($v) {
