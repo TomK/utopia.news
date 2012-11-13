@@ -1,5 +1,16 @@
 <?php
 
+class tabledef_NewsTags extends uTableDef implements iLinkTable {
+	public function SetupFields() {
+		$this->AddField('link_id',ftNUMBER);
+		$this->AddField('news_id',ftNUMBER);
+		$this->AddField('tag',ftVARCHAR,150);
+
+		$this->SetPrimaryKey('link_id');
+//		$this->SetUniqueField(array('news_id','tag'));
+	}
+}
+
 class tabledef_NewsTable extends uTableDef {
 	public $tablename = 'news';
 	public function SetupFields() {
@@ -7,7 +18,6 @@ class tabledef_NewsTable extends uTableDef {
 		$this->AddField('time',ftDATE);
 		$this->AddField('heading',ftVARCHAR,150);
 		$this->AddField('description',ftTEXT);
-		$this->AddField('tags',ftTEXT);
 		$this->AddField('text',ftLONGTEXT);
 		$this->AddField('image',ftIMAGE);
 		$this->AddField('archive',ftBOOL);
@@ -46,18 +56,33 @@ class module_NewsAdminDetail extends uSingleDataModule implements iAdminModule {
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
 	public function SetupFields() {
 		$this->CreateTable('news');
+		$this->CreateTable('tags','tabledef_NewsTags','news','news_id');
 		$this->AddField('time','time','news','Post Date',itDATE);
 		$this->AddField('heading','heading','news','Title',itTEXT);
 		$this->AddField('description','description','news','Description',itTEXT);
 		$this->FieldStyles_Set('description',array('width'=>'60%'));
-		$this->AddField('tags','tags','news','Tags',itTEXT);
+		$this->AddField('tags','tag','tags','tags',itTEXT);
+		$this->AddPreProcessCallback('tags',array($this,'ppTag'));
 		$this->FieldStyles_Set('tags',array('width'=>'60%'));
+		
 		$this->AddField('text','text','news','Content',itHTML);
 		$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'10em'));
 		$this->AddField('curr_image','image','news','Current Image');
 		$this->FieldStyles_Set('curr_image',array('height'=>100));
 		$this->AddField('image','image','news','Image',itFILE);
 		$this->AddField('archive','archive','news','Archive',itCHECKBOX);
+	}
+	public function ppTag($v) {
+		if (!is_array($v)) return $v;
+		sort($v);
+		return implode(',',$v);
+	}
+	public function UpdateField($fieldAlias,$newValue,&$pkVal=NULL) {
+		if ($fieldAlias == 'tags') {
+			$newValue = explode(',',$newValue);
+			foreach ($newValue as $k=>$v) $newValue[$k] = trim($v);
+		}
+		parent::UpdateField($fieldAlias,$newValue,$pkVal);
 	}
 	public function RunModule() {
 		$this->ShowData();
@@ -75,14 +100,21 @@ class module_NewsRSS extends uDataModule {
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
 	public function SetupFields() {
 		$this->CreateTable('news');
+		$this->CreateTable('tags','tabledef_NewsTags','news','news_id');
 		$this->AddField('time','time','news','Date',itDATE);
 		$this->AddField('heading','heading','news','Heading',itTEXT);
 		$this->AddField('description','description','news','Description',itTEXT);
-		$this->AddField('tags','tags','news','Tags',itTEXT);
+		$this->AddField('tags','tag','tags','tags',itTEXT);
+		$this->AddPreProcessCallback('tags',array($this,'ppTag'));
 		$this->AddField('text','text','news','Content',itHTML);
 		$this->AddField('image','image','news','Image',itFILE);
 		$this->AddField('archive','archive','news','Archive',itCHECKBOX);
 		$this->AddOrderBy('time','desc');
+	}
+	public function ppTag($v) {
+		if (!is_array($v)) return $v;
+		sort($v);
+		return implode(',',$v);
 	}
 	public function RunModule() {
 		utopia::CancelTemplate();
@@ -129,6 +161,18 @@ FIN;
 	}
 }
 
+class module_NewsTags extends uDataModule {
+	public function GetTabledef() { return 'tabledef_NewsTags'; }
+	public function GetOptions() { return DISTINCT_ROWS; }
+	public function SetupFields() {
+		$this->CreateTable('tags');
+		$this->AddField('tag','tag','tags','Tag');
+		$this->grouping = array('tag');
+	}
+	public function SetupParents() {}
+	public function RunModule() {}
+}
+
 class module_NewsDisplay extends uDataModule {
 	public function GetTitle() { return 'Latest News'; }
 	public function SetupParents() {
@@ -142,6 +186,7 @@ class module_NewsDisplay extends uDataModule {
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
 	public function SetupFields() {
 		$this->CreateTable('news');
+		$this->CreateTable('tags','tabledef_NewsTags','news','news_id');
 		$this->AddField('time','time','news','time');
 		$this->SetFieldType('time',ftDATE);
 		$this->AddField('heading','heading','news','heading');
@@ -149,11 +194,15 @@ class module_NewsDisplay extends uDataModule {
 		$this->AddField('description','description','news','description');
 		$this->AddField('image','image','news','image');
 		
+		$this->AddField('tags','tag','tags','tags',itTEXT);
+		$this->AddPreProcessCallback('tags',array($this,'ppTag'));
+		
 		$this->AddFilter('news_id',ctEQ,itNONE);
 		if (isset($_GET['news_id'])) {
 			$this->AddFilter('news_id',ctEQ,itNONE,$_GET['news_id']);
 		}
 		
+		$this->AddFilter('tags',ctEQ,itNONE);
 		$this->AddOrderBy('time','desc');
 	}
 	public function GetUUID() { return 'news'; }
@@ -169,6 +218,11 @@ class module_NewsDisplay extends uDataModule {
 			return;
 		}
 		echo '{widget.'.modOpts::GetOption('news_widget_archive').'}';
+	}
+	public function ppTag($v) {
+		if (!is_array($v)) return $v;
+		sort($v);
+		return implode(', ',$v);
 	}
 	public function ProcessDomDocument($o,$e,$doc) {
 		$head = $doc->getElementsByTagName('head')->item(0);
