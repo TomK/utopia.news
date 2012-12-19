@@ -21,6 +21,8 @@ class tabledef_NewsTable extends uTableDef {
 		$this->AddField('text',ftLONGTEXT);
 		$this->AddField('image',ftIMAGE);
 		$this->AddField('archive',ftBOOL);
+		
+		$this->AddField('featured',ftBOOL);
 
 		$this->SetPrimaryKey('news_id');
 	}
@@ -31,12 +33,13 @@ class module_NewsAdmin extends uListDataModule implements iAdminModule {
 		$this->AddParent('');
 	}
 	public function GetTitle() { return 'News List'; }
-	public function GetOptions() { return ALLOW_DELETE | ALLOW_FILTER; }
+	public function GetOptions() { return ALLOW_DELETE | ALLOW_FILTER | ALLOW_EDIT; }
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
 	public function SetupFields() {
 		$this->CreateTable('news');
 		$this->AddField('time','time','news','Posted');
 		$this->AddField('heading','heading','news','Title');
+		$this->AddField('featured','featured','news','Featured',itCHECKBOX);
 		
 		$this->AddFilter('time',ctGTEQ,itDATE);
 		$this->AddFilter('time',ctLTEQ,itDATE);
@@ -64,6 +67,8 @@ class module_NewsAdminDetail extends uSingleDataModule implements iAdminModule {
 		$this->AddField('tags','tag','tags','tags',itTEXT);
 		$this->AddPreProcessCallback('tags',array($this,'ppTag'));
 		$this->FieldStyles_Set('tags',array('width'=>'60%'));
+		
+		$this->AddField('featured','featured','news','Featured',itCHECKBOX);
 		
 		$this->AddField('text','text','news','Content',itHTML);
 		$this->FieldStyles_Set('text',array('width'=>'100%','height'=>'10em'));
@@ -109,6 +114,7 @@ class module_NewsRSS extends uDataModule {
 		$this->AddField('text','text','news','Content',itHTML);
 		$this->AddField('image','image','news','Image',itFILE);
 		$this->AddField('archive','archive','news','Archive',itCHECKBOX);
+		$this->AddField('featured','featured','news','Featured');
 		$this->AddOrderBy('time','desc');
 	}
 	public function ppTag($v) {
@@ -193,6 +199,7 @@ class module_NewsDisplay extends uDataModule {
 		$this->AddField('text','text','news','text');
 		$this->AddField('description','description','news','description');
 		$this->AddField('image','image','news','image');
+		$this->AddField('featured','featured','news','Featured');
 		
 		$this->AddField('tags','tag','tags','tags',itTEXT);
 		$this->AddPreProcessCallback('tags',array($this,'ppTag'));
