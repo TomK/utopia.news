@@ -135,7 +135,7 @@ class module_NewsRSS extends uDataModule {
 			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
 			$link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
 			$img = '';
-			if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.uBlob(get_class($this),'image',$row['news_id'],150,150)).'"/>';
+			if ($row['image']) $img = "\n".'  <media:thumbnail width="150" height="150" url="'.htmlentities('http://'.$dom.uBlob::GetLink(get_class($this),'image',$row['news_id']).'?w=150&h=150').'"/>';
 			$updated = date('r',strtotime($row['time']));
 			if (!$pubDate || (strtotime($row['time']) > $pubDate)) $pubDate = strtotime($row['time']);
 			$items .= <<<FIN
