@@ -127,11 +127,11 @@ class module_NewsRSS extends uDataModule {
 		$dom = utopia::GetDomainName();
 		$siteName = modOpts::GetOption('site_name');
 
-		$rows = $this->GetRows();
 		$items = '';
 		$obj = utopia::GetInstance('module_NewsDisplay');
 		$pubDate = null;
-		foreach ($rows as $row) {
+		$dataset = $this->GetDataset();
+		while (($row = $dataset->fetch())) {
 			$crop = (strlen($row['text']) > 100) ? substr($row['text'],0,100).'...' : '';
 			$link = htmlentities('http://'.$dom.$obj->GetURL(array('news_id'=>$row['news_id'])));
 			$img = '';
