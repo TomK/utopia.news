@@ -7,7 +7,7 @@ class tabledef_NewsTags extends uTableDef implements iLinkTable {
 		$this->AddField('tag',ftVARCHAR,150);
 
 		$this->SetPrimaryKey('link_id');
-//		$this->SetUniqueField(array('news_id','tag'));
+		$this->SetIndexField('news_id');
 	}
 }
 
