@@ -43,7 +43,6 @@ class module_NewsAdmin extends uListDataModule implements iAdminModule {
 		
 		$this->AddFilter('time',ctGTEQ,itDATE);
 		$this->AddFilter('time',ctLTEQ,itDATE);
-		$this->AddFilter('heading',ctLIKE,itTEXT);
 	}
 	public function RunModule() {
 		$this->ShowData();
