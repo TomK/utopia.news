@@ -208,7 +208,7 @@ class module_NewsDisplay extends uDataModule {
 			$this->AddFilter('news_id',ctEQ,itNONE,$_GET['news_id']);
 		}
 		
-		$this->AddFilter('`time` <= NOW()',ctCUSTOM);
+		$this->AddFilter('{time} <= NOW()',ctCUSTOM);
 		
 		if (isset($_GET['tags']))
 			$this->AddFilter('tags',ctEQ,itNONE,$_GET['tags']);
