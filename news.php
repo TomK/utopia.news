@@ -98,7 +98,7 @@ class module_NewsRSS extends uDataModule {
 		$this->SetRewrite(true);
 	}
 
-	protected static $uuid = 'news-rss';
+	public static $uuid = 'news-rss';
 	public function GetTitle() { return 'News RSS'; }
 	public function GetOptions() { return ALLOW_FILTER; }
 	public function GetTabledef() { return 'tabledef_NewsTable'; }
@@ -214,7 +214,7 @@ class module_NewsDisplay extends uDataModule {
 			$this->AddFilter('tags',ctEQ,itNONE,$_GET['tags']);
 		$this->AddOrderBy('time','desc');
 	}
-	protected static $uuid = 'news';
+	public static $uuid = 'news';
 	public function RunModule() {
 		uEvents::AddCallback('ProcessDomDocument',array($this,'ProcessDomDocument'));
 		if (isset($_GET['news_id'])) {
